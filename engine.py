@@ -18,6 +18,14 @@ def register():
 def login():
     return render_template('login.html')
 
+@app.route('/bank-transaction')
+def deposit():
+    return render_template('deposit.html')
+
+@app.route('/transfer')
+def transfer():
+    return render_template('transfer.html')
+
 
 
 if __name__ == '__main__':
