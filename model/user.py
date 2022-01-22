@@ -8,10 +8,11 @@ class User(db.Model):
     fname = db.Column(db.String(32))
     lname = db.Column(db.String(32))
     passw = db.Column(db.String(32))
-    phone = db.Column(db.Integer)
+    phone = db.Column(db.String(32))
     country = db.Column(db.String(32))
     city = db.Column(db.String(32))
     address = db.Column(db.String(32))
+    valid = db.Column(db.Boolean, default=False)
 
     def __init__(self, email, firstName, lastName, password, phone, country, city, address):
         self.email = email
@@ -22,6 +23,8 @@ class User(db.Model):
         self.country = country
         self.city = city
         self.address = address
+
+
 
 
 class UserSchema(Schema):
