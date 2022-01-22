@@ -168,7 +168,7 @@
                                 </div>
                                 <div class="stat-content d-inline-block">
                                     <div class="stat-text">Account balance</div>
-                                    <div class="stat-digit">1,012</div>
+                                    <div class="stat-digit">{{amount}}</div>
                                 </div>
                             </div>
                         </div>
@@ -188,7 +188,6 @@
 
 
 
-
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card">
@@ -203,101 +202,40 @@
                                                 <th>Expense Type</th>
                                                 <th>Amount</th>
                                                 <th>Status</th>
+                                                <th>Sender</th>
                                                 <th>Receiver</th>
-                                                <th>Date</th>
+                                                <th>Date & Time</th>
                                             </tr>
                                         </thead>
                                         <tbody>
+                                        {% for t in transactions %}
                                             <tr>
 
                                                 <td>
-                                                    Salary
+                                                    {{t.5}}
                                                 </td>
                                                 <td>
-                                                    $2000
+                                                    {{t.2}}
                                                 </td>
                                                 <td>
                                                     <span class="badge badge-primary">DONE</span>
                                                 </td>
                                                 <td>
-                                                    edumin@gmail.com
+                                                    {{t.1}}
                                                 </td>
                                                 <td>
-                                                    10/05/2017
+                                                    {{t.3}}
+                                                </td>
+                                                <td>
+                                                    {{t.4}}
                                                 </td>
                                             </tr>
                                             <tr>
+                                        {% endfor %}
+<!--                                                    <span class="badge badge-warning">PENDING</span>-->
 
-                                                <td>
-                                                    Salary
-                                                </td>
-                                                <td>
-                                                    $2000
-                                                </td>
-                                                <td>
-                                                    <span class="badge badge-warning">PENDING</span>
-                                                </td>
-                                                <td>
-                                                    edumin@gmail.com
-                                                </td>
-                                                <td>
-                                                    10/05/2017
-                                                </td>
-                                            </tr>
-                                            <tr>
+<!--                                                    <span class="badge badge-danger">CANCELED</span>-->
 
-                                                <td>
-                                                    Salary
-                                                </td>
-                                                <td>
-                                                    $2000
-                                                </td>
-                                                <td>
-                                                    <span class="badge badge-primary">DONE</span>
-                                                </td>
-                                                <td>
-                                                    edumin@gmail.com
-                                                </td>
-                                                <td>
-                                                    10/05/2017
-                                                </td>
-                                            </tr>
-                                            <tr>
-
-                                                <td>
-                                                    Salary
-                                                </td>
-                                                <td>
-                                                    $2000
-                                                </td>
-                                                <td>
-                                                    <span class="badge badge-danger">CANCELED</span>
-                                                </td>
-                                                <td>
-                                                    edumin@gmail.com
-                                                </td>
-                                                <td>
-                                                    10/05/2017
-                                                </td>
-                                            </tr>
-                                            <tr>
-
-                                                <td>
-                                                    Salary
-                                                </td>
-                                                <td>
-                                                    $2000
-                                                </td>
-                                                <td>
-                                                    <span class="badge badge-primary">DONE</span>
-                                                </td>
-                                                <td>
-                                                    edumin@gmail.com
-                                                </td>
-                                                <td>
-                                                    10/05/2017
-                                                </td>
-                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
