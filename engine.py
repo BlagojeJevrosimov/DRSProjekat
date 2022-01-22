@@ -32,29 +32,34 @@ def home(): #kad odemo na url / sta god da je u home() ce raditi
 
     #db.drop_all()
     #db.create_all()
+    #database_op.insert_credit_card('4222 4212 4787 4998','Milojko Milic',154,5876)
+    database_op.update_credit_card_amount('4222 4212 4787 4998', 2000)
 
+    #database_op.insert_transaction('djokssso@example.com', 2555, 'micko', 'expense')
+    #database_op.insert_transaction('djoksso@example.com', 25575, 'mickos', 'income')
 
+    #database_op.insert_user_amount('djoksssoss@example.com',255)
+    #database_op.update_amount('djoksssoss@example.com',6500)
 
+    credit = database_op.get_credit_card('4222 4212 4787 4998')
 
-    conn = mysql.connect()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * from transaction")
-    transactions = cursor.fetchall()
-    cursor.execute("SELECT value from amount where email = 'djokssso@example.com' ")
+    transactions = database_op.get_transactions()
+    transactions = database_op.filter_transaction_receiver('mickos')
     amount = database_op.get_amount('djoksssoss@example.com')
+
+    #database_op.register_user('examples@gmail.com','bozidar','kilibarda','55874','258746985','srb','mmm','rd')
+    #database_op.validate_user('examples@gmail.com')
+    user = database_op.check_if_user_exists('examples@gmail.com')
     #amount = 0
 
-    return render_template('home.html', transactions = transactions, amount = amount)
+    return render_template('home.html', transactions=transactions, amount=credit.amount_dinar)
 
 @app.route('/register')
 def register():
 
     
-    #database_op.insert_transaction('djokssso@example.com', 2555, 'micoo', 'expense')
-    #database_op.insert_user_amount('djoksssoss@example.com',255)
-    database_op.update_amount('djoksssoss@example.com',6000)
-
-    user = User('bozidar@gmail.com','bozidar','kilibarda','55874',258746985,'srbija','novi sad','adresa')
+    #user = User('bozidar@gmail.com','bozidar','kilibarda','55874',258746985,2523,'srb','mmm','rd')
+    
 
     return render_template('register.html')
 
