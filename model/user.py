@@ -1,10 +1,11 @@
 from config import db, ma
 from marshmallow import Schema, fields
+from flask_login import UserMixin
 
-
-class User(db.Model):
+class User(db.Model,UserMixin):
     __tablename__ = 'user'
-    email = db.Column(db.String(32), primary_key=True)
+    id =  db.Column(db.Integer, primary_key=True,autoincrement = True)
+    email = db.Column(db.String(32))
     fname = db.Column(db.String(32))
     lname = db.Column(db.String(32))
     passw = db.Column(db.String(32))

@@ -1,8 +1,10 @@
 from audioop import add
 from logging import debug
 from flask import Flask, render_template, jsonify , request, flash, redirect, url_for
+import flask_login 
 from flaskext.mysql import MySQL
-from flask_login import login_user, login_required, logout_user, current_user
+from flask_login import login_user, login_required, logout_user, current_user, LoginManager
+
 
 import database_op
 from model.user import User,UserSchema
@@ -27,36 +29,46 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 ma.init_app(app)
 
+login_manager = LoginManager()
+login_manager.login_view = 'login'
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(id):
+    return User.query.get(int(id))
+
 
 @app.route('/')#stavimo url endpointa 
 def start():
-    return render_template('login.html')
-@app.route('/home') #znaci na ruti / i /home nam otvara home.html
+    return redirect(url_for('home'))
+
+@app.route('/home', methods=['GET', 'POST']) #znaci na ruti / i /home nam otvara home.html
+@login_required
 def home(): #kad odemo na url / sta god da je u home() ce raditi
 
     #db.drop_all()
     #db.create_all()
     #database_op.insert_credit_card('4222 4212 4787 4998','Milojko Milic',154,5876)
-    database_op.update_credit_card_amount('4222 4212 4787 4998', 2000)
+   # database_op.update_credit_card_amount('4222 4212 4787 4998', 2000)
 
     #database_op.insert_transaction('djokssso@example.com', 2555, 'micko', 'expense')
-    #database_op.insert_transaction('djoksso@example.com', 25575, 'mickos', 'income')
+   # database_op.insert_transaction('djoksso@example.com', 25575, 'mickos', 'income')
 
     #database_op.insert_user_amount('djoksssoss@example.com',255)
     #database_op.update_amount('djoksssoss@example.com',6500)
 
     credit = database_op.get_credit_card('4222 4212 4787 4998')
 
-    transactions = database_op.get_transactions()
+    #transactions = database_op.get_transactions()
     transactions = database_op.filter_transaction_receiver('mickos')
     amount = database_op.get_amount('djoksssoss@example.com')
 
     #database_op.register_user('examples@gmail.com','bozidar','kilibarda','55874','258746985','srb','mmm','rd')
     #database_op.validate_user('examples@gmail.com')
-    user = database_op.check_if_user_exists('examples@gmail.com')
+    #user = database_op.check_if_user_exists('examples@gmail.com')
     #amount = 0
 
-    return render_template('home.html', transactions=transactions, amount=credit.amount_dinar)
+    return render_template('home.html', user = current_user, transactions=transactions, amount=credit.amount_dinar)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -97,19 +109,33 @@ def register():
         else:
             database_op.register_user(email=email, firstName=firstName,lastName=lastName, password=password1,phone = phoneNumber,country=country,city=city,address= address)
             login_user(User(email=email, firstName=firstName,lastName=lastName, password=password1,phone = phoneNumber,country=country,city=city,address= address), remember=True)
-            #flash('Account created!', category='success')
-            return redirect(url_for('templates.home'))
+            return redirect(url_for('home'))
 
-    
-    #user = User('bozidar@gmail.com','bozidar','kilibarda','55874',258746985,2523,'srb','mmm','rd')
-    
-
-    return render_template('register.html')
+    return render_template('register.html',user = current_user)
 
 @app.route('/login', methods=['GET', 'POST'] )
 def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
 
-    return render_template('login.html')
+        user = database_op.check_if_user_exists(email)
+        if user:
+            if user.passw == password:
+                login_user(user, remember=True)
+                return redirect(url_for('home'))
+            else:
+                flash('Incorrect password, try again.', category='error')
+        else:
+            flash('Email does not exist.', category='error')
+
+    return render_template("login.html",user = current_user)
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
 
 @app.route('/bank-transaction')
 def deposit():
