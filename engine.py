@@ -163,10 +163,46 @@ def deposit((sad)
             flash('Incorrect card number or cvc code, try again', category='error')
     return render_template('deposit.html',user=current_user)
 
-@app.route('/transfer')
-def transfer():
+@app.route('/transfer-registered',methods=['GET', 'POST'])
+@login_required
+def transfer_registered((sad)
+    if request.method=='POST':
+        receiving_email = request.form.get('receive_email')
+        amount = request.form.get('amount')
+        password = request.form.get('password')
+        receiving_user = database_op.check_if_user_exists(receiving_email)
+
+        if not receiving_user:
+            flash('User does not exist', category='error')
+        elif receiving_user.email == current_user.email:
+            flash('Chose another user, money cannot be transfered to yourself', category='error')
+        elif password != current_user.passw:
+            flash('Incorrect password, try again', category='error')
+        else:
+            x = threading.Thread(target=registered_user_transaction_validation, args=(current_user.email, receiving_user.email, amount, app))
+            x.start()
+            flash('Transaction is processing', category='message')
+            return redirect(url_for('transfer'))
     return render_template('transfer.html')
 
+
+@app.route('/transfer-bank',methods=['GET', 'POST'])
+@login_required
+def transfer_bank((sad)
+    if request.method=='POST':
+        card_num = request.form.get('card_num')
+        amount = request.form.get('amount')
+        password = request.form.get('password')
+
+        if password != current_user.passw:
+            flash('Incorrect password, try again', category='error')
+        else:
+            x = threading.Thread(target=to_bank_account_transaction_validation, args=(current_user.email, card_num, amount, app))
+            x.start()
+            flash('Transaction is processing', category='message')
+            return redirect(url_for('transfer'))
+
+    return render_template('transfer.html')
 
 
 if __name__ == '__main__':
