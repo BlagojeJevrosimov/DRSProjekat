@@ -1,9 +1,11 @@
 from audioop import add
+from locale import currency
 from logging import debug
-from flask import Flask, render_template, jsonify , request, flash, redirect, url_for
+from flask import Flask, render_template, jsonify , request, flash, redirect, session, url_for
 import flask_login 
 from flaskext.mysql import MySQL
 from flask_login import login_user, login_required, logout_user, current_user, LoginManager
+from currency_converter import CurrencyConverter
 
 
 import database_op
@@ -33,6 +35,8 @@ login_manager = LoginManager()
 login_manager.login_view = 'login'
 login_manager.init_app(app)
 
+url = 'https://api.exchangerate-api.com/v4/latest/RSD'
+
 @login_manager.user_loader
 def load_user(id):
     return User.query.get(int(id))
@@ -48,27 +52,25 @@ def home(): #kad odemo na url / sta god da je u home() ce raditi
 
     #db.drop_all()
     #db.create_all()
+
     #database_op.insert_credit_card('4222 4212 4787 4998','Milojko Milic',154,5876)
-   # database_op.update_credit_card_amount('4222 4212 4787 4998', 2000)
+    #database_op.update_credit_card_amount('4222 4212 4787 4998', 2000)
 
     #database_op.insert_transaction('djokssso@example.com', 2555, 'micko', 'expense')
-   # database_op.insert_transaction('djoksso@example.com', 25575, 'mickos', 'income')
-
-    #database_op.insert_user_amount('djoksssoss@example.com',255)
-    #database_op.update_amount('djoksssoss@example.com',6500)
-
-    credit = database_op.get_credit_card('4222 4212 4787 4998')
-
-    #transactions = database_op.get_transactions()
-    transactions = database_op.filter_transaction_receiver('mickos')
-    amount = database_op.get_amount('djoksssoss@example.com')
-
+    #database_op.insert_transaction('djoksso@example.com', 25575, 'mickos', 'income')
+    #database_op.insert_transaction('sso@example.com', 25575, 'djoksso@example.com', 'income')
     #database_op.register_user('examples@gmail.com','bozidar','kilibarda','55874','258746985','srb','mmm','rd')
+    #database_op.update_amount('examples@gmail.com',5000)
+    credit = database_op.get_credit_card('4222 4212 4787 4998')
+    transactions = database_op.filter_transaction_receiver('djoksso@example.com')
+    transactions.extend(database_op.filter_transaction_sender('djoksso@example.com'))
+    amount = database_op.get_amount(current_user.email)
+    #transactions = session['transactions']
     #database_op.validate_user('examples@gmail.com')
     #user = database_op.check_if_user_exists('examples@gmail.com')
     #amount = 0
-
-    return render_template('home.html', user = current_user, transactions=transactions, amount=credit.amount_dinar)
+    currencies = CurrencyConverter(url).currencies
+    return render_template('home.html', user = current_user, transactions=transactions, amount=amount, currencies = currencies, currency = 'RSD')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -152,7 +154,7 @@ def patch():
             flash('Password must be at least 7 characters.', category='error')
             return render_template("patch.html",user = current_user)
         elif password1 != password2:
-            flash('Passwords don't match.', category='error')
+            flash('Passwords don\'t match.', category='error')
             return render_template("patch.html",user = current_user)
 
 
@@ -201,7 +203,7 @@ def search():
 
 @app.route('/bank-transaction',methods=['GET', 'POST'])
 @login_required
-def deposit((sad)
+def deposit():
     if request.method == 'POST':
         cardnumber = request.form.get('card_number')
         expdate =  request.form.get('expiration')
@@ -232,7 +234,7 @@ def show_profile():
 
 @app.route('/transfer-registered',methods=['GET', 'POST'])
 @login_required
-def transfer_registered((sad)
+def transfer_registered():
     if request.method=='POST':
         receiving_email = request.form.get('receive_email')
         amount = request.form.get('amount')
@@ -252,10 +254,14 @@ def transfer_registered((sad)
             return redirect(url_for('transfer'))
     return render_template('transfer.html')
 
+@app.route('/transfer')
+@login_required
+def transfer():
+    return render_template('transfer.html')
 
 @app.route('/transfer-bank',methods=['GET', 'POST'])
 @login_required
-def transfer_bank((sad)
+def transfer_bank():
     if request.method=='POST':
         card_num = request.form.get('card_num')
         amount = request.form.get('amount')
@@ -271,6 +277,28 @@ def transfer_bank((sad)
 
     return render_template('transfer.html')
 
+def convert(from_cur,amount):
+    converter = CurrencyConverter(url)
+    return converter.convert(from_cur,'RSD',amount)
 
+@app.route('/change_currency',methods = ['POST'])
+@login_required
+def change_currency():
+    converter = CurrencyConverter(url)
+    currency = request.form.get('currency')
+    amount = database_op.get_amount(current_user.email)
+    amount = converter.convert('RSD',currency,amount)
+    currencies = converter.currencies
+    transactions = database_op.filter_transaction_receiver('djoksso@example.com')
+    transactions.extend(database_op.filter_transaction_sender('djoksso@example.com'))
+    return render_template('home.html',user = current_user,amount = amount, currency = currency, currencies=currencies,transactions=transactions)
+
+@app.route('/validate_user')
+@login_required
+def validate_user():
+    if current_user.valid == False:
+        database_op.validate_user(current_user.email,convert('USD',1))
+
+    return redirect(url_for('home'))
 if __name__ == '__main__':
     app.run(debug=True) 

@@ -14,16 +14,27 @@ def register_user(email, firstName, lastName, password, phone, country, city, ad
     db.session.add(amount)  #insertuje u tabelu amount email i amount, email odg onom od usera
     db.session.commit()
 
+def patch_user(changes):
+    user = User.query.filter_by(email = changes.email).first()
+    user.fname = changes.fname
+    user.lname = changes.lname
+    user.passw = changes.passw
+    user.address = changes.address
+    user.city = changes.city
+    user.country = changes.country
+    user.phone = changes.phone
+    db.session.commit()
 
 def check_if_user_exists(email):
     return User.query.filter_by(email = email).first()
 
-def validate_user(email):
+def validate_user(email,amount):
     user = User.query.filter_by(email=email).first()
+    curr_amount = get_amount(email)
+    curr_amount-=amount
+    update_amount(email,curr_amount)
     user.valid = True
     db.session.commit()
-
-
 
 #TRANSACTION OPERATIONS
 

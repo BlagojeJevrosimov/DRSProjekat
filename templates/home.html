@@ -84,12 +84,12 @@
                                     <i class="mdi mdi-account"></i>
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-right">
-                                    <a href="./app-profile.html" class="dropdown-item">
+                                    <a href="./profile" class="dropdown-item">
                                         <i class="icon-user"></i>
                                         <span class="ml-2">Profile </span>
                                     </a>
 
-                                    <a href="logout" class="dropdown-item">
+                                    <a href="/logout" class="dropdown-item">
                                         <i class="icon-key"></i>
                                         <span class="ml-2">Logout </span>
                                     </a>
@@ -115,7 +115,10 @@
                     <li><a class="has-arrow" href="javascript:void()" aria-expanded="false"><i
                                 class="icon icon-single-04"></i><span class="nav-text">Profile</span></a>
                         <ul aria-expanded="false">
-                            <li><a href="#">Edit profile</a></li>
+                            {% if user.valid == False %}
+                            <li><a href="/validate_user">Validate profile</a></li>
+                            {%endif%}
+                            <li><a href="/patch">Edit profile</a></li>
                             <li><a href="/logout">Log out</a></li>
                         </ul>
                     </li>
@@ -124,21 +127,11 @@
                     <li><a class="has-arrow" href="javascript:void()" aria-expanded="false"><i
                                 class="icon icon-form"></i><span class="nav-text">Services</span></a>
                         <ul aria-expanded="false">
-                            <li><a href="bank-transaction">Deposit money</a></li>
-                            <li><a href="transfer">Transfer money</a></li>
+                            <li><a href="/bank-transaction">Deposit money</a></li>
+                            <li><a href="/transfer">Transfer money</a></li>
 <!--                            <li><a href="./form-editor-summernote.html">Summernote</a></li>-->
 <!--                            <li><a href="form-pickers.html">Pickers</a></li>-->
 <!--                            <li><a href="form-validation-jquery.html">Jquery Validate</a></li>-->
-                        </ul>
-                    </li>
-
-
-                    <li class="nav-label">Extra</li>
-                    <li><a class="has-arrow" href="javascript:void()" aria-expanded="false"><i
-                                class="icon icon-single-copy-06"></i><span class="nav-text">Pages</span></a>
-                        <ul aria-expanded="false">
-                            <li><a href="register">Register</a></li>
-                            <li><a href="login">Login</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -175,23 +168,76 @@
                     <div class="col-lg-3 col-sm-6">
                         <div class="card">
                             <div class="stat-widget-one card-body">
-
                                 <div class="stat-content d-inline-block">
                                     <div class="stat-text">Curency</div>
-                                    <div class="stat-digit">USD</div>
+                                    <div class="stat-digit">{{currency}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6">
+                        <div class="card">
+                            <div class="stat-widget-one card-body">
+                                <div class="stat-content d-inline-block">
+                                    <div class="stat-text">Change to:</div>
+                                    <div class="stat-digit">
+                                        <form action="/change_currency" method="post">
+                                            <select name="currency" class="form-control" id="currency">
+                                                {%for c in currencies%}
+                                                <option  value="{{c}}">{{c}} </option>
+                                                {% endfor %}
+                                            </select>
+                                            <input type="hidden" name ="amount" value="{{amount}}">
+                                            <div>
+                                            <input type="submit"class="btn btn-primary btn-block" value="Change">
+                                        </div>
+                                        </form>
+                                    </div>
+                                    
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-
-
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-header">
-                                <h4 class="card-title">Transaction history</h4>
+                                <h4 class="card-title">Transaction history<br>
+                                    <form action="/search">
+                                        <div class="form-group row">
+                                            <label class="col-lg-4 col-form-label" for="search">Search:</label>
+                                            <input type="text" name="text" class="form-control">
+                                            <label class="col-lg-4 col-form-label" for="by">By:</label>
+                                            <div class="col-lg-6">
+                                                <select class="form-control" id="by" name="by">
+                                                <option value="expenseType" selected >ExpenseType</option>
+                                                <option value="status">Status</option>
+                                                <option value="sender">Sender</option>
+                                                <option value="reciever">Reciever</option>
+                                                </select>
+
+
+                                            </div>
+                                            <input type="submit" class="btn btn-primary btn-block" value="Search">
+                                        </div>
+                                    </form>
+                                    <form action="/sort">
+                                        <div class="form-group row">
+                                        <label>Sort:</label>
+                                        <select name="sort" class="form-control" id="sort">
+                                            <option value="amount" selected >Amount</option>
+                                            <option value="date">Date</option>
+                                        </select>
+                                        <label>In order</label>
+                                        <select name="order" class="form-control" id="order">
+                                            <option value="ascending"  >Ascending</option>
+                                            <option value="descending"selected>Descending</option>
+                                        </select>
+                                            <input type="submit" class="btn btn-primary btn-block" value="Sort">
+                                        </div>
+                                    </form>
+                                </h4>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">

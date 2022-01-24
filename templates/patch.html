@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Register</title>
+    <title>Change profile details</title>
     <!-- Favicon icon -->
     <link rel="icon" type="image/png" sizes="16x16" href= "{{ url_for('static',filename='images/favicon.png') }}">
     <link rel="stylesheet" href= "{{ url_for('static',filename='css/style.css') }}">
@@ -38,8 +38,8 @@
                         <div class="row no-gutters">
                             <div class="col-xl-12">
                                 <div class="auth-form">
-                                    <h4 class="text-center mb-4">Sign up your account</h4>
-                                    <form action="/register" method="post">
+                                    <h4 class="text-center mb-4">Change account details</h4>
+                                    <form action="/patch" method="post">
                                         <div class="form-group">
                                             <label><strong>First name</strong></label>
                                             <input type="text" class="form-control" placeholder="First name" name="firstName">
@@ -49,20 +49,16 @@
                                             <input type="text" class="form-control" placeholder="Last name" name="lastName">
                                         </div>
                                         <div class="form-group">
-                                            <label><strong>Email</strong></label>
-                                            <input type="email" class="form-control" placeholder="hello@example.com" name="email">
-                                        </div>
-                                        <div class="form-group">
                                             <label><strong>Phone number</strong></label>
                                             <input type="text" class="form-control" placeholder="06xxxxxxxx" name="phoneNumber">
                                         </div>
                                         <div class="form-group">
                                             <label><strong>Password</strong></label>
-                                            <input type="password" class="form-control" placeholder="Password" name="password1">
+                                            <input type="password" class="form-control" value="Password" name="password1">
                                         </div>
                                         <div class="form-group">
                                             <label><strong>Repeat Password</strong></label>
-                                            <input type="password" class="form-control" placeholder="Password" name="password2">
+                                            <input type="password" class="form-control" value="Password" name="password2">
                                         </div>
                                         <div class="form-group">
                                             <label><strong>Address</strong></label>
@@ -77,12 +73,9 @@
                                             <input type="text" class="form-control" placeholder="Country" name="country">
                                         </div>
                                         <div class="text-center mt-4">
-                                            <button type="submit" class="btn btn-primary btn-block">Sign me up</button>
+                                            <button type="submit" class="btn btn-primary btn-block">Change</button>
                                         </div>
                                     </form>
-                                    <div class="new-account mt-3">
-                                        <p>Already have an account? <a class="text-primary" href="/login">Sign in</a></p>
-                                    </div>
                                 </div>
                             </div>
                         </div>
