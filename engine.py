@@ -137,9 +137,31 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
-@app.route('/bank-transaction')
-def deposit():
-    return render_template('deposit.html')
+@app.route('/bank-transaction',methods=['GET', 'POST'])
+@login_required
+def deposit((sad)
+    if request.method == 'POST':
+        cardnumber = request.form.get('card_number')
+        expdate =  request.form.get('expiration')
+        cvc_code = request.form.get('cvc')
+        amount = request.form.get('amount')
+        credit_card = database_op.get_credit_card(cardnumber,cvc_code)
+
+
+        if credit_card:
+            expire_base = credit_card.expiration.strftime('%Y-%m')
+            expire_form = expdate[0:7]
+            if expdate == '':
+                flash('Expiration date is not checked', category='error')
+            elif expire_form != expire_base:
+                flash('Incorrect expiration date, try again', category='error')
+            else:
+                x = threading.Thread(target=bank_transaction_validation,args=(credit_card.amount_dinar,amount,current_user.email,cardnumber,app))
+                x.start()
+                return redirect(url_for('home'))
+        else:
+            flash('Incorrect card number or cvc code, try again', category='error')
+    return render_template('deposit.html',user=current_user)
 
 @app.route('/transfer')
 def transfer():
