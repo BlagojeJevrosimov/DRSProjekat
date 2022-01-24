@@ -106,9 +106,9 @@ def home(): #kad odemo na url / sta god da je u home() ce raditi
     #database_op.register_user('examples@gmail.com','bozidar','kilibarda','55874','258746985','srb','mmm','rd')
     #database_op.update_amount('examples@gmail.com',5000)
     #credit = database_op.get_credit_card('4222 4212 4787 4998')
-    #transactions = database_op.filter_transaction_receiver('djoksso@example.com')
-    #transactions.extend(database_op.filter_transaction_sender('djoksso@example.com'))
-    transactions = database_op.get_transactions()
+    transactions = database_op.filter_transaction_receiver(current_user.email)
+    transactions.extend(database_op.filter_transaction_sender(current_user.email))
+    #transactions = database_op.get_transactions()
     amount = database_op.get_amount(current_user.email)
     #transactions = session['transactions']
     #database_op.validate_user('examples@gmail.com')
