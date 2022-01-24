@@ -137,6 +137,45 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+@login_required
+def patch():
+    if  request.method == 'POST':
+        firstName = request.form.get('firstName')
+        lastName = request.form.get('lastName')
+        country = request.form.get('country')
+        city = request.form.get('city')
+        address = request.form.get('address')
+        phoneNumber = request.form.get('phoneNumber')
+        password1 = request.form.get('password1')
+        password2 = request.form.get('password2')
+        if len(password1) < 7:
+            flash('Password must be at least 7 characters.', category='error')
+            return render_template("patch.html",user = current_user)
+        elif password1 != password2:
+            flash('Passwords don't match.', category='error')
+            return render_template("patch.html",user = current_user)
+
+
+        temp = User(email = current_user.email, firstName=firstName,lastName=lastName, password=password1,phone = phoneNumber,country=country,city=city,address= address)
+
+        if len(temp.fname) < 2:
+            flash('First name required.', category='error')
+        elif len(temp.lname) < 2:
+            flash('Last name required.', category='error')
+        elif len(temp.country) < 2:
+            flash('Country required.', category='error')
+        elif len(temp.address) < 2:
+            flash('Address required.', category='error')
+        elif len(temp.city) < 2:
+            flash('City required.', category='error')
+        elif len(temp.phone) < 2:
+            flash('Phone number required.', category='error')
+        else:
+            database_op.patch_user(temp)
+            return redirect(url_for('home'))
+
+    return render_template("patch.html",user = current_user)
+
 @app.route('/bank-transaction',methods=['GET', 'POST'])
 @login_required
 def deposit((sad)
