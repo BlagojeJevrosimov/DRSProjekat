@@ -175,6 +175,29 @@ def patch():
             return redirect(url_for('home'))
 
     return render_template("patch.html",user = current_user)
+    
+@app.route('/search')
+def search():
+    search= request.form.get('search')
+    text = request.form.get('text')
+    transactions = database_op.filter_transaction_receiver(current_user.email)
+    transactions.extend(database_op.filter_transaction_sender(current_user.email))
+    t2=[]
+    if search != "":
+        match search:
+            case 'reciever':
+                for t in transactions:
+                    if(t.receiving_party.lower()==text.lower()):
+                        t2.append(t)
+            case'sender':
+                for t in transactions:
+                    if(t.sending_party.lower()==text.lower()):
+                        t2.append(t)
+            case'expenseType':
+                for t in transactions:
+                    if(t.description.lower()==text.lower()):
+                        t2.append(t) 
+    return redirect(url_for('home'))
 
 @app.route('/bank-transaction',methods=['GET', 'POST'])
 @login_required
@@ -201,6 +224,7 @@ def deposit((sad)
         else:
             flash('Incorrect card number or cvc code, try again', category='error')
     return render_template('deposit.html',user=current_user)
+    
 
 @app.route('/transfer-registered',methods=['GET', 'POST'])
 @login_required
