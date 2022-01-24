@@ -225,6 +225,10 @@ def deposit((sad)
             flash('Incorrect card number or cvc code, try again', category='error')
     return render_template('deposit.html',user=current_user)
     
+@app.route('/profile')
+@login_required
+def show_profile():
+    return render_template('profile.html',user = current_user)
 
 @app.route('/transfer-registered',methods=['GET', 'POST'])
 @login_required
