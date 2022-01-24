@@ -89,6 +89,7 @@ def load_user(id):
 
 @app.route('/')#stavimo url endpointa 
 def start():
+    #db.create_all()
     return redirect(url_for('home'))
 
 @app.route('/home', methods=['GET', 'POST']) #znaci na ruti / i /home nam otvara home.html
@@ -99,6 +100,7 @@ def home(): #kad odemo na url / sta god da je u home() ce raditi
     #db.create_all()
 
     #database_op.insert_credit_card('4222 4212 4787 4998','Milojko Milic',154,5876)
+    #database_op.insert_credit_card('0000 0000 0000 0000', 'Milojko Milic', 000, 5876)
     #database_op.update_credit_card_amount('4222 4212 4787 4998', 2000)
 
     #database_op.insert_transaction('djokssso@example.com', 2555, 'micko', 'expense')
@@ -107,8 +109,8 @@ def home(): #kad odemo na url / sta god da je u home() ce raditi
     #database_op.register_user('examples@gmail.com','bozidar','kilibarda','55874','258746985','srb','mmm','rd')
     #database_op.update_amount('djoksso@example.com',5000)
     #credit = database_op.get_credit_card('4222 4212 4787 4998')
-    transactions = database_op.filter_transaction_receiver('djoksso@example.com')
-    transactions.extend(database_op.filter_transaction_sender('djoksso@example.com'))
+    transactions = database_op.filter_transaction_receiver(current_user.email)
+    transactions.extend(database_op.filter_transaction_sender(current_user.email))
     global amount
     amount = converter.convert('RSD',curr,database_op.get_amount(current_user.email))
     #transactions = session['transactions']
