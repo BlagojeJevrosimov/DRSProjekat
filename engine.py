@@ -39,7 +39,8 @@ login_manager.init_app(app)
 
 url = 'https://api.exchangerate-api.com/v4/latest/RSD'
 
-
+curr='RSD'
+amount = 0
 
 def bank_transaction_validation(credit_card_amount,amount,email,credit_card,app):
     with app.app_context():
@@ -93,7 +94,7 @@ def start():
 @app.route('/home', methods=['GET', 'POST']) #znaci na ruti / i /home nam otvara home.html
 @login_required
 def home(): #kad odemo na url / sta god da je u home() ce raditi
-
+    converter = CurrencyConverter(url)
     #db.drop_all()
     #db.create_all()
 
@@ -104,18 +105,19 @@ def home(): #kad odemo na url / sta god da je u home() ce raditi
     #database_op.insert_transaction('djoksso@example.com', 25575, 'mickos', 'income')
     #database_op.insert_transaction('sso@example.com', 25575, 'djoksso@example.com', 'income')
     #database_op.register_user('examples@gmail.com','bozidar','kilibarda','55874','258746985','srb','mmm','rd')
-    #database_op.update_amount('examples@gmail.com',5000)
+    #database_op.update_amount('djoksso@example.com',5000)
     #credit = database_op.get_credit_card('4222 4212 4787 4998')
-    transactions = database_op.filter_transaction_receiver(current_user.email)
-    transactions.extend(database_op.filter_transaction_sender(current_user.email))
-    #transactions = database_op.get_transactions()
-    amount = database_op.get_amount(current_user.email)
+    transactions = database_op.filter_transaction_receiver('djoksso@example.com')
+    transactions.extend(database_op.filter_transaction_sender('djoksso@example.com'))
+    global amount
+    amount = converter.convert('RSD',curr,database_op.get_amount(current_user.email))
     #transactions = session['transactions']
     #database_op.validate_user('examples@gmail.com')
     #user = database_op.check_if_user_exists('examples@gmail.com')
     #amount = 0
-    currencies = CurrencyConverter(url).currencies
-    return render_template('home.html', user = current_user, transactions=transactions, amount=amount, currencies = currencies, currency = 'RSD')
+    currencies = converter.currencies
+    return render_template('home.html', user = current_user, transactions=transactions, amount=amount, currencies = currencies, currency = curr)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -137,12 +139,10 @@ def register():
             flash('First name required.', category='error')
         elif len(lastName) < 2:
             flash('Last name required.', category='error')
-        elif len(country) < 2:
-            flash('Country required.', category='error')
         elif len(email) < 4:
             flash('Email must be greater than 3 characters.', category='error')
-        elif ~email.__contains__('@'):
-            flash('Email must contain "@" characters.', category='error')
+        elif len(phoneNumber) < 2:
+            flash('Phone number required.', category='error')
         elif password1 != password2:
             flash('Passwords don\'t match.', category='error')
         elif len(password1) < 7:
@@ -151,11 +151,13 @@ def register():
             flash('Address required.', category='error')
         elif len(city) < 2:
             flash('City required.', category='error')
-        elif len(phoneNumber) < 2:
-            flash('Phone number required.', category='error')
+        elif len(country) < 2:
+            flash('Country required.', category='error')
+
         else:
             database_op.register_user(email=email, firstName=firstName,lastName=lastName, password=password1,phone = phoneNumber,country=country,city=city,address= address)
-            login_user(User(email=email, firstName=firstName,lastName=lastName, password=password1,phone = phoneNumber,country=country,city=city,address= address), remember=True)
+            user = database_op.check_if_user_exists(email)
+            login_user(user, remember=False)
             return redirect(url_for('home'))
 
     return render_template('register.html',user = current_user)
@@ -224,28 +226,35 @@ def patch():
 
     return render_template("patch.html",user = current_user)
     
-@app.route('/search')
+@app.route('/search',methods =['POST'])
+@login_required
 def search():
     search= request.form.get('search')
-    text = request.form.get('text')
+    by = request.form.get('by')
     transactions = database_op.filter_transaction_receiver(current_user.email)
     transactions.extend(database_op.filter_transaction_sender(current_user.email))
+    currencies = CurrencyConverter(url).currencies   
     t2=[]
-    if search != "":
-        match search:
+    if search != "" and search != None and by !=None:
+        match by:
             case 'reciever':
                 for t in transactions:
-                    if(t.receiving_party.lower()==text.lower()):
+                    if(t.receiving_party.lower()==search.lower()):
                         t2.append(t)
             case'sender':
                 for t in transactions:
-                    if(t.sending_party.lower()==text.lower()):
+                    if(t.sending_party.lower()==search.lower()):
                         t2.append(t)
             case'expenseType':
                 for t in transactions:
-                    if(t.description.lower()==text.lower()):
+                    if(t.description.lower()==search.lower()):
                         t2.append(t) 
-    return redirect(url_for('home'))
+            case'state':
+                for t in transactions:
+                    if(t.state.lower()==search.lower()):
+                        t2.append(t) 
+        return render_template('home.html',transactions=t2,user = current_user,amount = amount,currencies = currencies,currency = curr)    
+    return render_template('home.html',transactions=transactions,user = current_user,amount = amount,currencies = currencies,currency = curr)    
 
 @app.route('/bank-transaction',methods=['GET', 'POST'])
 @login_required
@@ -331,13 +340,14 @@ def convert(from_cur,amount):
 @login_required
 def change_currency():
     converter = CurrencyConverter(url)
-    currency = request.form.get('currency')
-    amount = database_op.get_amount(current_user.email)
-    amount = converter.convert('RSD',currency,amount)
+    global curr 
+    global amount
+    curr = request.form.get('currency')
+    amount = converter.convert('RSD',curr,database_op.get_amount(current_user.email))
     currencies = converter.currencies
     transactions = database_op.filter_transaction_receiver('djoksso@example.com')
     transactions.extend(database_op.filter_transaction_sender('djoksso@example.com'))
-    return render_template('home.html',user = current_user,amount = amount, currency = currency, currencies=currencies,transactions=transactions)
+    return render_template('home.html',user = current_user,amount = amount, currency = curr, currencies=currencies,transactions=transactions)
 
 @app.route('/validate_user')
 @login_required
@@ -346,5 +356,6 @@ def validate_user():
         database_op.validate_user(current_user.email,convert('USD',1))
 
     return redirect(url_for('home'))
+
 if __name__ == '__main__':
     app.run(debug=True) 
