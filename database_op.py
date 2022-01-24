@@ -27,14 +27,14 @@ def validate_user(email):
 
 #TRANSACTION OPERATIONS
 
-def insert_transaction(sendingParty, amount, receivingParty, description(sad)
+def insert_transaction(sendingParty, amount, receivingParty, description):
     transaction = Transaction(sendingParty, amount, receivingParty, description)
     db.session.add(transaction)
     db.session.commit()
     transaction = Transaction.query.all()
     return transaction[-1].transaction_id
 
-def successful_bank_transaction(transaction_id, amount,credit_number,user_account(sad)
+def successful_bank_transaction(transaction_id, amount,credit_number,user_account):
     transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
     transaction.state = 'DONE'
     #db.session.commit()
@@ -45,13 +45,13 @@ def successful_bank_transaction(transaction_id, amount,credit_number,user_accoun
     credit_card.amount_dinar = int(credit_card.amount_dinar) - int(amount)
     db.session.commit()
 
-def unsuccessful_transaction(transaction_id(sad)
+def unsuccessful_transaction(transaction_id):
     transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
     transaction.state = 'CANCELED'
     db.session.commit()
 
 
-def successful_user_user_transaction(id,sender_email,receiver_email,amount(sad)
+def successful_user_user_transaction(id,sender_email,receiver_email,amount):
     transaction = Transaction.query.filter_by(transaction_id=id).first()
     transaction.state = 'DONE'
 
@@ -63,7 +63,7 @@ def successful_user_user_transaction(id,sender_email,receiver_email,amount(sad)
     db.session.commit()
 
 
-def successful_user_bank_transaction(id,sender_email,card_num,amount(sad)
+def successful_user_bank_transaction(id,sender_email,card_num,amount):
     transaction = Transaction.query.filter_by(transaction_id=id).first()
     transaction.state = 'DONE'
 
