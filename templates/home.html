@@ -84,7 +84,7 @@
                                     <i class="mdi mdi-account"></i>
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-right">
-                                    <a href="./profile" class="dropdown-item">
+                                    <a href="/profile" class="dropdown-item">
                                         <i class="icon-user"></i>
                                         <span class="ml-2">Profile </span>
                                     </a>
@@ -151,6 +151,8 @@
 
 
 
+
+
                 <div class="row">
                     <div class="col-lg-3 col-sm-6">
                         <div class="card">
@@ -178,65 +180,107 @@
                     <div class="col-lg-3 col-sm-6">
                         <div class="card">
                             <div class="stat-widget-one card-body">
-                                <div class="stat-content d-inline-block">
-                                    <div class="stat-text">Change to:</div>
-                                    <div class="stat-digit">
-                                        <form action="/change_currency" method="post">
-                                            <select name="currency" class="form-control" id="currency">
-                                                {%for c in currencies%}
-                                                <option  value="{{c}}">{{c}} </option>
-                                                {% endfor %}
-                                            </select>
-                                            <input type="hidden" name ="amount" value="{{amount}}">
-                                            <div>
-                                            <input type="submit"class="btn btn-primary btn-block" value="Change">
-                                        </div>
-                                        </form>
-                                    </div>
-                                    
-                                </div>
-                            </div>
+                                <form action="/change_currency" method="post">
+                                    <select name="currency" class="form-control"  id="currency">
+                                      {%for c in currencies%}
+                                      <option  value="{{c}}">{{c}} </option>
+                                      {% endfor %}
+                                 </select>
+                                 <input type="hidden" name ="amount" value="{{amount}}">
+                                 <input type="submit" class="btn btn-primary btn-block" value="Change">
+                             </form>
                         </div>
                     </div>
                 </div>
+            </div>
+
+
+
+
+<!--ubaceno ovde-->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="form-validation">
+                    <form class="form-valide" action="/search" method="post">
+                        <div class="row">
+                            <div class="col-xl-6">
+                                <div class="form-group row">
+                                    <label class="col-lg-4 col-form-label" for="text">Search
+                                    </label>
+                                    <div class="col-lg-6">
+                                        <input type="text" class="form-control" id="text" name="text" placeholder="Search">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-6">
+                                <div class="form-group row">
+                                    <label class="col-lg-4 col-form-label" for="search">Criteria
+
+                                    </label>
+                                    <div class="col-lg-6">
+                                        <select class="form-control" id="search" name="search">
+                                            <option value="expenseType" selected >ExpenseType</option>
+                                                <option value="status">Status</option>
+                                                <option value="sender">Sender</option>
+                                                <option value="reciever">Reciever</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Search</button>
+                        </div>
+                    </form>
+
+                    <form class="form-valide" action="/sort" method="post">
+                        <div class="row">
+                            <div class="col-xl-6">
+                                <div class="form-group row">
+                                    <label class="col-lg-4 col-form-label" for="sort">Sort
+                                    </label>
+                                    <div class="col-lg-6">
+                                        <select class="form-control" id="sort" name="sort">
+                                            <option value="ascending" selected >Ascending</option>
+                                            <option value="descending">Descending</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-6">
+                                <div class="form-group row">
+                                    <label class="col-lg-4 col-form-label" for="by">by
+                                    </label>
+                                    <div class="col-lg-6">
+                                        <select class="form-control" id="by" name="by">
+                                            <option value="amount" selected >Amount</option>
+                                            <option value="date">Date</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Sort</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!--  -->
+
+
+
+
+
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-header">
                                 <h4 class="card-title">Transaction history<br>
-                                    <form action="/search">
-                                        <div class="form-group row">
-                                            <label class="col-lg-4 col-form-label" for="search">Search:</label>
-                                            <input type="text" name="text" class="form-control">
-                                            <label class="col-lg-4 col-form-label" for="by">By:</label>
-                                            <div class="col-lg-6">
-                                                <select class="form-control" id="by" name="by">
-                                                <option value="expenseType" selected >ExpenseType</option>
-                                                <option value="status">Status</option>
-                                                <option value="sender">Sender</option>
-                                                <option value="reciever">Reciever</option>
-                                                </select>
-
-
-                                            </div>
-                                            <input type="submit" class="btn btn-primary btn-block" value="Search">
-                                        </div>
-                                    </form>
-                                    <form action="/sort">
-                                        <div class="form-group row">
-                                        <label>Sort:</label>
-                                        <select name="sort" class="form-control" id="sort">
-                                            <option value="amount" selected >Amount</option>
-                                            <option value="date">Date</option>
-                                        </select>
-                                        <label>In order</label>
-                                        <select name="order" class="form-control" id="order">
-                                            <option value="ascending"  >Ascending</option>
-                                            <option value="descending"selected>Descending</option>
-                                        </select>
-                                            <input type="submit" class="btn btn-primary btn-block" value="Sort">
-                                        </div>
-                                    </form>
                                 </h4>
                             </div>
                             <div class="card-body">
@@ -246,7 +290,7 @@
                                             <tr>
                                                 <th>Expense Type</th>
                                                 <th>Amount</th>
-                                                <th>Status</th>
+                                                <th>State</th>
                                                 <th>Sender</th>
                                                 <th>Receiver</th>
                                                 <th>Date & Time</th>
@@ -263,7 +307,15 @@
                                                     {{t.amount}}
                                                 </td>
                                                 <td>
+                                                    {%if t.state == 'DONE'%}
                                                     <span class="badge badge-primary">DONE</span>
+                                                    {%endif%}
+                                                    {%if t.state == 'PENDING'%}
+                                                    <span class="badge badge-warning">PENDING </span>
+                                                    {%endif%}
+                                                    {%if t.state == 'CANCELED'%}
+                                                    <span class="badge badge-danger">CANCELED</span>
+                                                    {%endif%}
                                                 </td>
                                                 <td>
                                                     {{t.sending_party}}

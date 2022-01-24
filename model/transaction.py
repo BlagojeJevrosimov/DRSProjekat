@@ -13,6 +13,7 @@ class Transaction(db.Model):
     receiving_party = db.Column(db.String(32))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     description = db.Column(db.String(32))
+    state = db.Column(db.String(32), default='PENDING')
 
     def __init__(self, sendingParty, amount, receivingParty, description):
         self.sending_party = sendingParty

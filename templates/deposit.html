@@ -92,6 +92,16 @@
 <!--                            <li><a href="form-validation-jquery.html">Jquery Validate</a></li>-->
                         </ul>
                     </li>
+
+
+                    <li class="nav-label">Extra</li>
+                    <li><a class="has-arrow" href="javascript:void()" aria-expanded="false"><i
+                                class="icon icon-single-copy-06"></i><span class="nav-text">Pages</span></a>
+                        <ul aria-expanded="false">
+                            <li><a href="register">Register</a></li>
+                            <li><a href="login">Login</a></li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -102,13 +112,39 @@
         <!--**********************************
             Content body start
         ***********************************-->
+
+
+
+
+
+
         <div class="content-body">
             <div class="container-fluid">
                 <div class="row page-titles mx-0">
                     <div class="col-sm-6 p-md-0">
                         <div class="welcome-text">
                             <h4>Enter credit card information</h4>
-                            <p class="mb-1">Validation</p>
+
+
+                            {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %} {% for category, message in messages %} {% if category ==
+    'error' %}
+    <div class="alert alert-danger alter-dismissable fade show" role="alert">
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% else %}
+    <div class="alert alert-success alter-dismissable fade show" role="alert">
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endif %} {% endfor %} {% endif %} {% endwith %}
+
+
                         </div>
                     </div>
                 </div>
@@ -121,50 +157,42 @@
                             </div>
                             <div class="card-body">
                                 <div class="form-validation">
-                                    <form class="form-valide" action="#" method="post">
+                                    <form class="form-valide" action="/bank-transaction" method="post">
                                         <div class="row">
                                             <div class="col-xl-6">
                                                 <div class="form-group row">
-                                                    <label class="col-lg-4 col-form-label" for="val-username">Card number
+                                                    <label class="col-lg-4 col-form-label" for="card_number">Card number
                                                         <span class="text-danger">*</span>
                                                     </label>
                                                     <div class="col-lg-6">
-                                                        <input type="text" class="form-control" id="val-username" name="val-username" placeholder="e.g. 1234 5678 9123 4567">
-                                                    </div>
-                                                </div>
-                                                <div class="form-group row">
-                                                    <label class="col-lg-4 col-form-label" for="val-phoneus">Phone (SRB)
-                                                        <span class="text-danger">*</span>
-                                                    </label>
-                                                    <div class="col-lg-6">
-                                                        <input type="text" class="form-control" id="val-phoneus" name="val-phoneus" placeholder="+381xxxxxxxxx">
+                                                        <input type="text" class="form-control" id="card_number"  name="card_number" placeholder="e.g. 1234 5678 9123 4567">
                                                     </div>
                                                 </div>
 
                                                 <div class="form-group row">
-                                                    <label class="col-lg-4 col-form-label" for="val-phoneus">Expiration date
+                                                    <label class="col-lg-4 col-form-label" for="expiration">Expiration date
                                                         <span class="text-danger">*</span>
                                                     </label>
                                                     <div class="col-lg-6">
-                                                        <input type="month" class="form-control" id="val-phoneus" name="val-phoneus" >
+                                                        <input type="month" class="form-control" id="expiration" name="expiration" >
                                                     </div>
                                                 </div>
 
                                                 <div class="form-group row">
-                                                    <label class="col-lg-4 col-form-label" for="val-password">CVC code
+                                                    <label class="col-lg-4 col-form-label" for="cvc">CVC code
                                                         <span class="text-danger">*</span>
                                                     </label>
                                                     <div class="col-lg-6">
-                                                        <input type="text" class="form-control" id="val-password" name="val-password" placeholder="e.g. 123">
+                                                        <input type="text" class="form-control" id="cvc" name="cvc" placeholder="e.g. 123">
                                                     </div>
                                                 </div>
 
                                                 <div class="form-group row">
-                                                    <label class="col-lg-4 col-form-label" for="val-currency">Amount
+                                                    <label class="col-lg-4 col-form-label" for="amount">Amount
                                                         <span class="text-danger">*</span>
                                                     </label>
                                                     <div class="col-lg-6">
-                                                        <input type="text" class="form-control" id="val-currency" name="val-currency" placeholder="$21.60">
+                                                        <input type="number" min="1" class="form-control" id="amount" name="amount" placeholder="$21.60">
                                                     </div>
                                                 </div>
 

@@ -117,13 +117,17 @@ def get_amount(email):
 #operacije sa karticom
 
 
+def check_if_credit_card_exists(card_num): #zbog transakcije na bankovni racun
+    return Card.query.filter_by(card_num=card_num).first()
+
+
 def update_credit_card_amount(card_num,new_amount):
     x = Card.query.filter_by(card_num=card_num).first()
     x.amount_dinar = new_amount
     db.session.commit()
 
-def get_credit_card(card_num): #vratimo karticu i nadjemo da li ima odg sumu novca
-    return Card.query.filter_by(card_num=card_num).first()
+def get_credit_card(card_num,cvc): #vratimo karticu i nadjemo da li ima odg sumu novca
+    return Card.query.filter_by(card_num=card_num,code=cvc).first()
 
 
 #TESTNE METODE

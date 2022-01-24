@@ -6,6 +6,8 @@ import flask_login
 from flaskext.mysql import MySQL
 from flask_login import login_user, login_required, logout_user, current_user, LoginManager
 from currency_converter import CurrencyConverter
+import threading
+import time
 
 
 import database_op
@@ -37,6 +39,48 @@ login_manager.init_app(app)
 
 url = 'https://api.exchangerate-api.com/v4/latest/RSD'
 
+
+
+def bank_transaction_validation(credit_card_amount,amount,email,credit_card,app):
+    with app.app_context():
+        id = database_op.insert_transaction(credit_card,amount,email,'INCOME')
+        time.sleep(10)
+        if int(credit_card_amount) - int(amount) >= 0:
+            database_op.successful_bank_transaction(id,amount,credit_card,email)
+        else:
+            database_op.unsuccessful_transaction(id)
+        return
+
+def registered_user_transaction_validation(sender_email,receiver_email,amount,app):
+    with app.app_context():
+        id = database_op.insert_transaction(sender_email,amount,receiver_email,'EXPENSE')
+        time.sleep(10)
+        acount_value = database_op.get_amount(sender_email)
+
+        if int(acount_value) - int(amount) >= 0:
+            database_op.successful_user_user_transaction(id,sender_email,receiver_email,amount)
+        else:
+            database_op.unsuccessful_transaction(id)
+
+    return
+
+def to_bank_account_transaction_validation(sender_email,card_num,amount,app):
+    with app.app_context():
+        id = database_op.insert_transaction(sender_email,amount,card_num,'EXPENSE')
+        time.sleep(10)
+        acount_value = database_op.get_amount(sender_email)
+        credit_card = database_op.check_if_credit_card_exists(card_num)
+
+        if not credit_card:
+            database_op.unsuccessful_transaction(id)
+        elif int(acount_value) - int(amount) >= 0:
+            database_op.successful_user_bank_transaction(id,sender_email,card_num,amount)
+        else:
+            database_op.unsuccessful_transaction(id)
+    return
+
+
+
 @login_manager.user_loader
 def load_user(id):
     return User.query.get(int(id))
@@ -61,9 +105,10 @@ def home(): #kad odemo na url / sta god da je u home() ce raditi
     #database_op.insert_transaction('sso@example.com', 25575, 'djoksso@example.com', 'income')
     #database_op.register_user('examples@gmail.com','bozidar','kilibarda','55874','258746985','srb','mmm','rd')
     #database_op.update_amount('examples@gmail.com',5000)
-    credit = database_op.get_credit_card('4222 4212 4787 4998')
-    transactions = database_op.filter_transaction_receiver('djoksso@example.com')
-    transactions.extend(database_op.filter_transaction_sender('djoksso@example.com'))
+    #credit = database_op.get_credit_card('4222 4212 4787 4998')
+    #transactions = database_op.filter_transaction_receiver('djoksso@example.com')
+    #transactions.extend(database_op.filter_transaction_sender('djoksso@example.com'))
+    transactions = database_op.get_transactions()
     amount = database_op.get_amount(current_user.email)
     #transactions = session['transactions']
     #database_op.validate_user('examples@gmail.com')
@@ -139,6 +184,7 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+@app.route('/patch')
 @login_required
 def patch():
     if  request.method == 'POST':
