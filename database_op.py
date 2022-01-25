@@ -3,6 +3,7 @@ from model.user import User
 from model.transaction import Transaction
 from model.amount import Amount
 from model.credit_card import Card
+from sqlalchemy import or_
 
 
 #REGISTRUJE KORISNIKA I UJEDNO NAPRAVI SA NJEGOVIM EMAILOM NAPRAVI ROW U TABELI AMOUNT GDE CE SE CUVATI KOLIKO IMA PARA NA RACUNU TAJ KORISNIK
@@ -86,8 +87,17 @@ def successful_user_bank_transaction(id,sender_email,card_num,amount):
 
     db.session.commit()
 
-def get_transactions():
-    return Transaction.query.all()
+def get_transactions(email):
+    return Transaction.query.filter((Transaction.sending_party == email) | (Transaction.receiving_party==email))
+def get_transactions_amount_desc(email):
+    return Transaction.query.filter((Transaction.sending_party == email) | (Transaction.receiving_party==email)).order_by(Transaction.amount.desc())
+def get_transactions_date_desc(email):
+    return Transaction.query.filter((Transaction.sending_party == email) | (Transaction.receiving_party==email)).order_by(Transaction.timestamp.desc())
+
+def get_transactions_amount_asc(email):
+    return Transaction.query.filter((Transaction.sending_party == email) | (Transaction.receiving_party==email)).order_by(Transaction.amount.asc())
+def get_transactions_date_asc(email):
+    return Transaction.query.filter((Transaction.sending_party == email) | (Transaction.receiving_party==email)).order_by(Transaction.timestamp.asc())
 
 def filter_transaction_sender(sender):
     return Transaction.query.filter_by(sending_party=sender).all()
@@ -97,6 +107,7 @@ def filter_transaction_receiver(receiver):
 
 def filter_transaction_amout(amount):
     return Transaction.query.filter_by(amount=amount).all()
+
 
 
 

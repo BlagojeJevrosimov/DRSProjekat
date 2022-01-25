@@ -1,6 +1,8 @@
 from audioop import add
 from locale import currency
 from logging import debug
+from nturl2path import url2pathname
+from socketserver import DatagramRequestHandler
 from flask import Flask, render_template, jsonify , request, flash, redirect, session, url_for
 import flask_login 
 from flaskext.mysql import MySQL
@@ -99,24 +101,9 @@ def home(): #kad odemo na url / sta god da je u home() ce raditi
     #db.drop_all()
     #db.create_all()
 
-    #database_op.insert_credit_card('4222 4212 4787 4998','Milojko Milic',154,5876)
-    #database_op.insert_credit_card('0000 0000 0000 0000', 'Milojko Milic', 000, 5876)
-    #database_op.update_credit_card_amount('4222 4212 4787 4998', 2000)
-
-    #database_op.insert_transaction('djokssso@example.com', 2555, 'micko', 'expense')
-    #database_op.insert_transaction('djoksso@example.com', 25575, 'mickos', 'income')
-    #database_op.insert_transaction('sso@example.com', 25575, 'djoksso@example.com', 'income')
-    #database_op.register_user('examples@gmail.com','bozidar','kilibarda','55874','258746985','srb','mmm','rd')
-    #database_op.update_amount('djoksso@example.com',5000)
-    #credit = database_op.get_credit_card('4222 4212 4787 4998')
-    transactions = database_op.filter_transaction_receiver(current_user.email)
-    transactions.extend(database_op.filter_transaction_sender(current_user.email))
+    transactions = database_op.get_transactions(current_user.email)
     global amount
     amount = converter.convert('RSD',curr,database_op.get_amount(current_user.email))
-    #transactions = session['transactions']
-    #database_op.validate_user('examples@gmail.com')
-    #user = database_op.check_if_user_exists('examples@gmail.com')
-    #amount = 0
     currencies = converter.currencies
     return render_template('home.html', user = current_user, transactions=transactions, amount=amount, currencies = currencies, currency = curr)
 
@@ -228,36 +215,60 @@ def patch():
 
     return render_template("patch.html",user = current_user)
     
-@app.route('/search',methods =['POST'])
+@app.route('/search',methods =['GET','POST'])
 @login_required
 def search():
-    search= request.form.get('search')
-    by = request.form.get('by')
-    transactions = database_op.filter_transaction_receiver(current_user.email)
-    transactions.extend(database_op.filter_transaction_sender(current_user.email))
-    currencies = CurrencyConverter(url).currencies   
-    t2=[]
-    if search != "" and search != None and by !=None:
-        match by:
-            case 'reciever':
-                for t in transactions:
-                    if(t.receiving_party.lower()==search.lower()):
-                        t2.append(t)
-            case'sender':
-                for t in transactions:
-                    if(t.sending_party.lower()==search.lower()):
-                        t2.append(t)
-            case'expenseType':
-                for t in transactions:
-                    if(t.description.lower()==search.lower()):
-                        t2.append(t) 
-            case'state':
-                for t in transactions:
-                    if(t.state.lower()==search.lower()):
-                        t2.append(t) 
-        return render_template('home.html',transactions=t2,user = current_user,amount = amount,currencies = currencies,currency = curr)    
-    return render_template('home.html',transactions=transactions,user = current_user,amount = amount,currencies = currencies,currency = curr)    
+    if request.method=='POST':
+        search= request.form.get('search')
+        by = request.form.get('by')
+        transactions = database_op.get_transactions(current_user.email)
+        currencies = CurrencyConverter(url).currencies   
+        t2=[]
+        if search != "" and search != None and by !=None:
+            match by:
+                case 'reciever':
+                    for t in transactions:
+                        if(t.receiving_party.lower()==search.lower()):
+                            t2.append(t)
+                case'sender':
+                    for t in transactions:
+                        if(t.sending_party.lower()==search.lower()):
+                            t2.append(t)
+                case'expenseType':
+                    for t in transactions:
+                        if(t.description.lower()==search.lower()):
+                            t2.append(t) 
+                case'state':
+                    for t in transactions:
+                        if(t.state.lower()==search.lower()):
+                            t2.append(t) 
+            return render_template('home.html',transactions=t2,user = current_user,amount = amount,currencies = currencies,currency = curr)    
+        return render_template('home.html',transactions=transactions,user = current_user,amount = amount,currencies = currencies,currency = curr)  
+    return redirect(url_for('home'))
 
+@app.route('/sort',methods =['GET','POST'])
+@login_required
+def sort():
+    if request.method =='POST':
+        sort= request.form.get('sort')
+        by = request.form.get('by')
+        currencies = CurrencyConverter(url).currencies  
+        transactions=database_op.get_transactions(current_user.email) 
+        if by != "" and by != None:
+            match by:
+                case 'amount':
+                    if(sort=='ascending'):
+                        transactions = database_op.get_transactions_amount_asc(current_user.email)
+                    else:
+                        transactions =database_op.get_transactions_amount_desc(current_user.email)
+                case'date':
+                    if(sort=='ascending'):
+                         transactions =database_op.get_transactions_date_asc(current_user.email)
+                    else:
+                         transactions =database_op.get_transactions_date_desc(current_user.email)
+
+        return render_template('home.html',transactions=transactions,user = current_user,amount = amount,currencies = currencies,currency = curr)
+    return redirect(url_for('home')) 
 @app.route('/bank-transaction',methods=['GET', 'POST'])
 @login_required
 def deposit():
@@ -347,8 +358,8 @@ def change_currency():
     curr = request.form.get('currency')
     amount = converter.convert('RSD',curr,database_op.get_amount(current_user.email))
     currencies = converter.currencies
-    transactions = database_op.filter_transaction_receiver('djoksso@example.com')
-    transactions.extend(database_op.filter_transaction_sender('djoksso@example.com'))
+    transactions = database_op.get_transactions(current_user.email)
+
     return render_template('home.html',user = current_user,amount = amount, currency = curr, currencies=currencies,transactions=transactions)
 
 @app.route('/validate_user')
