@@ -9,26 +9,8 @@
     <!-- Favicon icon -->
     <link rel="icon" type="image/png" sizes="16x16" href= "{{ url_for('static',filename='images/favicon.png') }}">
     <link rel="stylesheet" href= "{{ url_for('static',filename='css/style.css') }}">
+</head>
 
-
-<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=XRn2ylG_W04ESsG-xF5DqDiGUXuw9qqBGVJcOd4YHHYy8oG_aQ6z-s3gaTE8wMLXjM-3wui5L9A9-qsWDgmMjlOa5R1Sec0c73KDBG7N0l6OBjagstkG0niuW8B7IqmxgqIrYaUAeMdutrnmJdpX-Q" charset="UTF-8"></script></head>
-{% with messages = get_flashed_messages(with_categories=true) %} {% if
-    messages %} {% for category, message in messages %} {% if category ==
-    'error' %}
-    <div class="alert alert-danger alter-dismissable fade show" role="alert">
-      {{ message }}
-      <button type="button" class="close" data-dismiss="alert">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-    {% else %}
-    <div class="alert alert-success alter-dismissable fade show" role="alert">
-      {{ message }}
-      <button type="button" class="close" data-dismiss="alert">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-    {% endif %} {% endfor %} {% endif %} {% endwith %}
 <body class="h-100">
     <div class="authincation h-100">
         <div class="container-fluid h-100">
