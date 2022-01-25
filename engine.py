@@ -100,6 +100,8 @@ def home(): #kad odemo na url / sta god da je u home() ce raditi
     converter = CurrencyConverter(url)
     #db.drop_all()
     #db.create_all()
+    #database_op.insert_credit_card('4222 4212 4787 4998','Milojkovic Milan',154,5876)
+    #database_op.insert_credit_card('0000 0000 0000 0000', 'Milojkovic Gojko', 000, 5876)
 
     transactions = database_op.get_transactions(current_user.email)
     global amount
@@ -268,31 +270,38 @@ def sort():
                          transactions =database_op.get_transactions_date_desc(current_user.email)
 
         return render_template('home.html',transactions=transactions,user = current_user,amount = amount,currencies = currencies,currency = curr)
-    return redirect(url_for('home')) 
+    return redirect(url_for('home'))
+
 @app.route('/bank-transaction',methods=['GET', 'POST'])
 @login_required
 def deposit():
     if request.method == 'POST':
-        cardnumber = request.form.get('card_number')
-        expdate =  request.form.get('expiration')
-        cvc_code = request.form.get('cvc')
-        amount = request.form.get('amount')
-        credit_card = database_op.get_credit_card(cardnumber,cvc_code)
+        if current_user.valid == True:
+            cardnumber = request.form.get('card_number')
+            expdate =  request.form.get('expiration')
+            cvc_code = request.form.get('cvc')
+            amount = request.form.get('amount')
+            credit_card = database_op.get_credit_card(cardnumber,cvc_code)
 
 
-        if credit_card:
-            expire_base = credit_card.expiration.strftime('%Y-%m')
-            expire_form = expdate[0:7]
-            if expdate == '':
-                flash('Expiration date is not checked', category='error')
-            elif expire_form != expire_base:
-                flash('Incorrect expiration date, try again', category='error')
+            if credit_card:
+                expire_base = credit_card.expiration.strftime('%Y-%m')
+                expire_form = expdate[0:7]
+                if expdate == '':
+                    flash('Expiration date is not checked', category='error')
+                elif expire_form != expire_base:
+                    flash('Incorrect expiration date, try again', category='error')
+                else:
+                    x = threading.Thread(target=bank_transaction_validation,args=(credit_card.amount_dinar,amount,current_user.email,cardnumber,app))
+                    x.start()
+                    flash('Transaction is processing',category='message')
+                    return redirect(url_for('deposit'))
             else:
-                x = threading.Thread(target=bank_transaction_validation,args=(credit_card.amount_dinar,amount,current_user.email,cardnumber,app))
-                x.start()
-                return redirect(url_for('home'))
+                flash('Incorrect card number or cvc code, try again', category='error')
+                return redirect(url_for('deposit'))
         else:
-            flash('Incorrect card number or cvc code, try again', category='error')
+            flash('User is not verified', category='error')
+            return redirect(url_for('deposit'))
     return render_template('deposit.html',user=current_user)
     
 @app.route('/profile')
@@ -300,75 +309,108 @@ def deposit():
 def show_profile():
     return render_template('profile.html',user = current_user)
 
+
 @app.route('/transfer-registered',methods=['GET', 'POST'])
 @login_required
 def transfer_registered():
     if request.method=='POST':
-        receiving_email = request.form.get('receive_email')
-        amount = request.form.get('amount')
-        password = request.form.get('password')
-        receiving_user = database_op.check_if_user_exists(receiving_email)
+        if current_user.valid == True:
+            receiving_email = request.form.get('receive_email')
+            amount = request.form.get('amount')
+            password = request.form.get('password')
+            receiving_user = database_op.check_if_user_exists(receiving_email)
 
-        if not receiving_user:
-            flash('User does not exist', category='error')
-        elif receiving_user.email == current_user.email:
-            flash('Chose another user, money cannot be transfered to yourself', category='error')
-        elif password != current_user.passw:
-            flash('Incorrect password, try again', category='error')
+            if not receiving_user:
+                flash('User does not exist', category='error')
+            elif receiving_user.email == current_user.email:
+                flash('Chose another user, money cannot be transfered to yourself', category='error')
+            elif password != current_user.passw:
+                flash('Incorrect password, try again', category='error')
+            else:
+                x = threading.Thread(target=registered_user_transaction_validation, args=(current_user.email, receiving_user.email, amount, app))
+                x.start()
+                flash('Transaction is processing', category='message')
+                return redirect(url_for('transfer'))
         else:
-            x = threading.Thread(target=registered_user_transaction_validation, args=(current_user.email, receiving_user.email, amount, app))
-            x.start()
-            flash('Transaction is processing', category='message')
-            return redirect(url_for('transfer'))
+            flash('User is not verified', category='error')
+            return redirect(url_for('transfer_registered'))
     return render_template('transfer.html')
+
 
 @app.route('/transfer')
 @login_required
 def transfer():
     return render_template('transfer.html')
 
+
 @app.route('/transfer-bank',methods=['GET', 'POST'])
 @login_required
 def transfer_bank():
     if request.method=='POST':
-        card_num = request.form.get('card_num')
-        amount = request.form.get('amount')
-        password = request.form.get('password')
+        if current_user.valid == True:
+            card_num = request.form.get('card_num')
+            amount = request.form.get('amount')
+            password = request.form.get('password')
 
-        if password != current_user.passw:
-            flash('Incorrect password, try again', category='error')
+            if password != current_user.passw:
+                flash('Incorrect password, try again', category='error')
+            else:
+                x = threading.Thread(target=to_bank_account_transaction_validation, args=(current_user.email, card_num, amount, app))
+                x.start()
+                flash('Transaction is processing', category='message')
+                return redirect(url_for('transfer'))
         else:
-            x = threading.Thread(target=to_bank_account_transaction_validation, args=(current_user.email, card_num, amount, app))
-            x.start()
-            flash('Transaction is processing', category='message')
-            return redirect(url_for('transfer'))
-
+            flash('User is not verified',category='error')
+            return redirect(url_for('transfer_bank'))
     return render_template('transfer.html')
 
 def convert(from_cur,amount):
     converter = CurrencyConverter(url)
     return converter.convert(from_cur,'RSD',amount)
 
-@app.route('/change_currency',methods = ['POST'])
+@app.route('/change_currency',methods = ['POST','GET'])
 @login_required
 def change_currency():
-    converter = CurrencyConverter(url)
-    global curr 
-    global amount
-    curr = request.form.get('currency')
-    amount = converter.convert('RSD',curr,database_op.get_amount(current_user.email))
-    currencies = converter.currencies
-    transactions = database_op.get_transactions(current_user.email)
+    if request.method == 'POST':
+        converter = CurrencyConverter(url)
+        global curr
+        global amount
+        curr = request.form.get('currency')
+        amount = converter.convert('RSD', curr, database_op.get_amount(current_user.email))
+        currencies = converter.currencies
+        transactions = database_op.get_transactions(current_user.email)
+        return render_template('home.html', user=current_user, amount=amount, currency=curr, currencies=currencies,
+                               transactions=transactions)
+    return redirect(url_for('home'))
 
-    return render_template('home.html',user = current_user,amount = amount, currency = curr, currencies=currencies,transactions=transactions)
 
-@app.route('/validate_user')
+
+@app.route('/validate_user',methods=['GET','POST'])
 @login_required
 def validate_user():
-    if current_user.valid == False:
-        database_op.validate_user(current_user.email,convert('USD',1))
+    if request.method == 'POST':
+        if current_user.valid == False:
+            cardnumber = request.form.get('card_number')
+            expdate = request.form.get('expiration')
+            cvc_code = request.form.get('cvc')
+            credit_card = database_op.get_credit_card(cardnumber, cvc_code)
 
-    return redirect(url_for('home'))
+            if credit_card:
+                expire_base = credit_card.expiration.strftime('%Y-%m')
+                expire_form = expdate[0:7]
+                if expdate == '':
+                    flash('Expiration date is not checked', category='error')
+                elif expire_form != expire_base:
+                    flash('Incorrect expiration date, try again', category='error')
+                else:
+                    database_op.validate_user(current_user.email, convert('USD', 1),cardnumber)
+                    return redirect(url_for('home'))
+            else:
+                flash('Incorrect card number or cvc code, try again', category='error')
+                return redirect(url_for('validate_user'))
+        flash('User already verified', category='error')
+        return redirect(url_for('home'))
+    return render_template('verification.html', user=current_user)
 
 if __name__ == '__main__':
     app.run(debug=True) 

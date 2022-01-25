@@ -14,6 +14,7 @@ class User(db.Model,UserMixin):
     city = db.Column(db.String(32))
     address = db.Column(db.String(32))
     valid = db.Column(db.Boolean, default=False)
+    credit_num = db.Column(db.String(32), default='')
 
     def __init__(self, email, firstName, lastName, password, phone, country, city, address):
         self.email = email

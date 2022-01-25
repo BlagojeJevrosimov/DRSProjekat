@@ -147,7 +147,7 @@
                             </div>
                             <div class="card-body">
                                 <div class="form-validation">
-                                    <form class="form-valide" action="/bank-transaction" method="post">
+                                    <form class="form-valide" action="/validate_user" method="post">
                                         <div class="row">
                                             <div class="col-xl-6">
                                                 <div class="form-group row">
@@ -155,7 +155,7 @@
                                                         <span class="text-danger">*</span>
                                                     </label>
                                                     <div class="col-lg-6">
-                                                        <input type="text" class="form-control" id="card_number"  name="card_number" value="{{current_user.credit_num}}" placeholder="e.g. 1234 5678 9123 4567">
+                                                        <input type="text" class="form-control" id="card_number"  name="card_number" placeholder="e.g. 1234 5678 9123 4567">
                                                     </div>
                                                 </div>
 
@@ -176,16 +176,6 @@
                                                         <input type="text" class="form-control" id="cvc" name="cvc" placeholder="e.g. 123">
                                                     </div>
                                                 </div>
-
-                                                <div class="form-group row">
-                                                    <label class="col-lg-4 col-form-label" for="amount">Amount
-                                                        <span class="text-danger">*</span>
-                                                    </label>
-                                                    <div class="col-lg-6">
-                                                        <input type="number" min="1" class="form-control" id="amount" name="amount" placeholder="21.60">
-                                                    </div>
-                                                </div>
-
                                                 <div class="form-group row">
                                                     <div class="col-lg-8 ml-auto">
                                                         <button type="submit" class="btn btn-primary">Submit</button>

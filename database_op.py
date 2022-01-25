@@ -29,11 +29,14 @@ def patch_user(changes):
 def check_if_user_exists(email):
     return User.query.filter_by(email = email).first()
 
-def validate_user(email,amount):
+def validate_user(email,amount,card_num):
+    transation = Transaction(card_num,amount,email,'VERIFICATION')
+    transation.state = 'DONE'
+    db.session.add(transation)
+    credit_card = Card.query.filter_by(card_num=card_num).first()
+    credit_card.amount_dinar = int(credit_card.amount_dinar) - int(amount)
     user = User.query.filter_by(email=email).first()
-    curr_amount = get_amount(email)
-    curr_amount-=amount
-    update_amount(email,curr_amount)
+    user.credit_num = card_num
     user.valid = True
     db.session.commit()
 
