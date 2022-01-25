@@ -47,7 +47,7 @@ amount = 0
 def bank_transaction_validation(credit_card_amount,amount,email,credit_card,app):
     with app.app_context():
         id = database_op.insert_transaction(credit_card,amount,email,'INCOME')
-        time.sleep(10)
+        time.sleep(120)
         if int(credit_card_amount) - int(amount) >= 0:
             database_op.successful_bank_transaction(id,amount,credit_card,email)
         else:
@@ -57,7 +57,7 @@ def bank_transaction_validation(credit_card_amount,amount,email,credit_card,app)
 def registered_user_transaction_validation(sender_email,receiver_email,amount,app):
     with app.app_context():
         id = database_op.insert_transaction(sender_email,amount,receiver_email,'EXPENSE')
-        time.sleep(10)
+        time.sleep(120)
         acount_value = database_op.get_amount(sender_email)
 
         if int(acount_value) - int(amount) >= 0:
@@ -70,7 +70,7 @@ def registered_user_transaction_validation(sender_email,receiver_email,amount,ap
 def to_bank_account_transaction_validation(sender_email,card_num,amount,app):
     with app.app_context():
         id = database_op.insert_transaction(sender_email,amount,card_num,'EXPENSE')
-        time.sleep(10)
+        time.sleep(120)
         acount_value = database_op.get_amount(sender_email)
         credit_card = database_op.check_if_credit_card_exists(card_num)
 
