@@ -10,6 +10,7 @@ from flask_login import login_user, login_required, logout_user, current_user, L
 from currency_converter import CurrencyConverter
 import threading
 import time
+from multiprocessing import Lock
 
 
 import database_op
@@ -44,33 +45,38 @@ url = 'https://api.exchangerate-api.com/v4/latest/RSD'
 curr='RSD'
 amount = 0
 
-def bank_transaction_validation(credit_card_amount,amount,email,credit_card,app):
+def bank_transaction_validation(credit_card_amount,amount,email,credit_card,app,lock):
     with app.app_context():
         id = database_op.insert_transaction(credit_card,amount,email,'INCOME')
-        time.sleep(120)
+        time.sleep(10)
+        lock.acquire()
         if int(credit_card_amount) - int(amount) >= 0:
             database_op.successful_bank_transaction(id,amount,credit_card,email)
         else:
             database_op.unsuccessful_transaction(id)
+        lock.release()
         return
 
-def registered_user_transaction_validation(sender_email,receiver_email,amount,app):
+def registered_user_transaction_validation(sender_email,receiver_email,amount,app,lock):
     with app.app_context():
         id = database_op.insert_transaction(sender_email,amount,receiver_email,'EXPENSE')
-        time.sleep(120)
+        time.sleep(10)
+        lock.acquire()
         acount_value = database_op.get_amount(sender_email)
 
         if int(acount_value) - int(amount) >= 0:
             database_op.successful_user_user_transaction(id,sender_email,receiver_email,amount)
         else:
             database_op.unsuccessful_transaction(id)
+        lock.release()
 
     return
 
-def to_bank_account_transaction_validation(sender_email,card_num,amount,app):
+def to_bank_account_transaction_validation(sender_email,card_num,amount,app,lock):
     with app.app_context():
         id = database_op.insert_transaction(sender_email,amount,card_num,'EXPENSE')
-        time.sleep(120)
+        time.sleep(10)
+        lock.acquire()
         acount_value = database_op.get_amount(sender_email)
         credit_card = database_op.check_if_credit_card_exists(card_num)
 
@@ -80,6 +86,7 @@ def to_bank_account_transaction_validation(sender_email,card_num,amount,app):
             database_op.successful_user_bank_transaction(id,sender_email,card_num,amount)
         else:
             database_op.unsuccessful_transaction(id)
+        lock.release()
     return
 
 
@@ -102,6 +109,10 @@ def home(): #kad odemo na url / sta god da je u home() ce raditi
     #db.create_all()
     #database_op.insert_credit_card('4222 4212 4787 4998','Milojkovic Milan',154,5876)
     #database_op.insert_credit_card('0000 0000 0000 0000', 'Milojkovic Gojko', 000, 5876)
+    #database_op.insert_credit_card('1111 1111 1111 1111', 'Milojkovic Rajko', 111, 3000)
+    #database_op.insert_credit_card('2222 2222 2222 2222', 'Milojkovic Mujo', 222, 2000)
+    #database_op.insert_credit_card('3333 3333 3333 3333', 'Milojkovic Milan', 333, 5876)
+    #database_op.insert_credit_card('4444 4444 4444 4444', 'Milojkovic Rajka', 444, 5876)
 
     transactions = database_op.get_transactions(current_user.email)
     global amount
@@ -292,7 +303,8 @@ def deposit():
                 elif expire_form != expire_base:
                     flash('Incorrect expiration date, try again', category='error')
                 else:
-                    x = threading.Thread(target=bank_transaction_validation,args=(credit_card.amount_dinar,amount,current_user.email,cardnumber,app))
+                    lock = Lock()
+                    x = threading.Thread(target=bank_transaction_validation,args=(credit_card.amount_dinar,amount,current_user.email,cardnumber,app,lock))
                     x.start()
                     flash('Transaction is processing',category='message')
                     return redirect(url_for('deposit'))
@@ -327,7 +339,8 @@ def transfer_registered():
             elif password != current_user.passw:
                 flash('Incorrect password, try again', category='error')
             else:
-                x = threading.Thread(target=registered_user_transaction_validation, args=(current_user.email, receiving_user.email, amount, app))
+                lock = Lock()
+                x = threading.Thread(target=registered_user_transaction_validation, args=(current_user.email, receiving_user.email, amount, app,lock))
                 x.start()
                 flash('Transaction is processing', category='message')
                 return redirect(url_for('transfer'))
@@ -355,7 +368,8 @@ def transfer_bank():
             if password != current_user.passw:
                 flash('Incorrect password, try again', category='error')
             else:
-                x = threading.Thread(target=to_bank_account_transaction_validation, args=(current_user.email, card_num, amount, app))
+                lock = Lock()
+                x = threading.Thread(target=to_bank_account_transaction_validation, args=(current_user.email, card_num, amount, app,lock))
                 x.start()
                 flash('Transaction is processing', category='message')
                 return redirect(url_for('transfer'))

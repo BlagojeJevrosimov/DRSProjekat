@@ -59,6 +59,7 @@ def successful_bank_transaction(transaction_id, amount,credit_number,user_accoun
     credit_card = Card.query.filter_by(card_num=credit_number).first()
     credit_card.amount_dinar = int(credit_card.amount_dinar) - int(amount)
     db.session.commit()
+    return
 
 def unsuccessful_transaction(transaction_id):
     transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
@@ -76,6 +77,7 @@ def successful_user_user_transaction(id,sender_email,receiver_email,amount):
     receiver_account = Amount.query.filter_by(email=receiver_email).first()
     receiver_account.value = int(receiver_account.value) + int(amount)
     db.session.commit()
+    return
 
 
 def successful_user_bank_transaction(id,sender_email,card_num,amount):
@@ -89,6 +91,7 @@ def successful_user_bank_transaction(id,sender_email,card_num,amount):
     credit_card.amount_dinar = int(credit_card.amount_dinar) + int(amount)
 
     db.session.commit()
+    return
 
 def get_transactions(email):
     return Transaction.query.filter((Transaction.sending_party == email) | (Transaction.receiving_party==email))
